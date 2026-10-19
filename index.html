@@ -19,7 +19,7 @@ html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='%231a5f4a' stroke-opacity='.13' stroke-width='2'%3E%3Cpath d='M30 40h12v-12h10v12h12v10H52v12H42V50H30z'/%3E%3Ccircle cx='150' cy='45' r='14'/%3E%3Cpath d='M20 150h30l8-18 12 36 10-18h30'/%3E%3Ccircle cx='165' cy='165' r='12'/%3E%3Ccircle cx='165' cy='165' r='4'/%3E%3C/svg%3E")}
-.wrap{max-width:1100px;margin:0 auto;padding:20px 20px 40px}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 20px 40px; position: relative;}
 .brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}
 .brand svg{width:44px;height:52px;flex:none}
 .brand b{display:block;font-size:1.15rem;font-weight:800;line-height:1.1}
@@ -81,12 +81,55 @@ tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
 .disc{margin:18px auto 0;max-width:760px;text-align:center;font-size:.8rem;color:var(--muted)}
 [hidden]{display:none!important}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ecg path{stroke-dashoffset:0}}
+
+/* --- NEW: Fullscreen Processing Animation CSS --- */
+#processing-screen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg); 
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+#processing-screen.active {
+  opacity: 1; pointer-events: auto;
+}
+.pulse-box {
+  display: flex; flex-direction: column; align-items: center;
+  animation: pulse 1.5s infinite ease-in-out;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+.slogan {
+  margin-top: 24px; font-size: 1.3rem; font-weight: 800; color: var(--green); letter-spacing: 0.05em; text-align: center;
+}
 </style>
 </head>
 <body>
+
+<!-- Processing Interstitial Screen -->
+<div id="processing-screen">
+  <div class="pulse-box">
+    <!-- Restored Classic Logo -->
+    <svg width="80" height="96" viewBox="0 0 100 120" fill="none" aria-hidden="true">
+      <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="var(--green)"/>
+      <path d="M15 55 H28 L33 35 L38.5 55" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M61.5 55 L67 80 L73 55 H85" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#fff" stroke="var(--err)" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
+    <div class="slogan">Analyzing clinical parameters...</div>
+  </div>
+</div>
+
 <div class="wrap">
   <div class="brand">
-    <svg viewBox="0 0 60 70" aria-hidden="true"><path d="M30 2 56 12v26c0 17-11 27-26 31C15 65 4 55 4 38V12z" fill="#1a5f4a"/><path d="M8 36h12l5-12 9 22 5-12h13" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><circle cx="30" cy="32" r="7" fill="#fff"/><path d="M30 27v10M25 32h10" stroke="#a40e0e" stroke-width="3"/></svg>
+    <!-- Restored Classic Logo for Header -->
+    <svg viewBox="0 0 100 120" fill="none" aria-hidden="true">
+      <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="var(--green)"/>
+      <path d="M15 55 H28 L33 35 L38.5 55" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M61.5 55 L67 80 L73 55 H85" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#fff" stroke="var(--err)" stroke-width="4" stroke-linejoin="round"/>
+    </svg>
     <div><b>Instant Vitals</b><span>CHECKER</span></div>
   </div>
 
@@ -189,21 +232,18 @@ tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
       sum.classList.add("on");$(bad[0].id).focus();return;
     }
     sum.classList.remove("on");
-    runAPI(); // Replaced local logic with the API call function
+    runAPI(); 
   });
   
   async function runAPI(){
-    // Gather numeric form data
     var d={};V.forEach(function(s){d[s.id]=Number($(s.id).value)});
     var ageVal = Number($("age").value) || 0;
     var o2Val = Number($("o2").value);
     var avpuVal = Number($("avpu").value);
     
-    // Get text labels for the results table
     var avpuTxt=$("avpu").options[$("avpu").selectedIndex].text;
     var o2Txt=$("o2").options[$("o2").selectedIndex].text;
 
-    // Match the exact Pydantic schema required by the FastAPI backend
     var payload = {
         age: ageVal,
         heart_rate: d.hr,
@@ -215,16 +255,11 @@ tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
         consciousness_alert: avpuVal
     };
 
-    var btn = $("submit-btn");
-    var originalBtnText = btn.innerHTML;
-    
-    // UI Loading state
-    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg> Analyzing Data...';
-    btn.style.opacity = '0.8';
-    btn.style.pointerEvents = 'none';
+    // Activate the pulsing loading screen
+    $("formView").hidden = true;
+    $("processing-screen").classList.add("active");
 
     try {
-        // Send request to your live Render backend
         const response = await fetch('https://triage-api-1qji.onrender.com/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -246,37 +281,39 @@ tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
             r={c:"low", h:"STABLE: Monitor Normally", p:"Vital parameters remain within normal threshold bounds."};
         }
 
-        var b=$("band");b.className="band "+r.c;
-        b.innerHTML='<div class="score" aria-hidden="true"><div><b>'+(isCritical ? '⚠️' : '✓')+'</b><small>AI</small></div></div><div><h2>'+r.h+'</h2><p>'+r.p+'</p></div>';
-        b.setAttribute("aria-label","AI Prediction. "+r.h);
+        // Delay showing results to ensure the pulsing animation plays smoothly
+        setTimeout(() => {
+            $("processing-screen").classList.remove("active");
 
-        var rows=[
-            ["Respiratory rate",d.rr+" /min"],
-            ["SpO₂",d.spo2+" %"],
-            ["Breathing support",o2Txt],
-            ["Systolic blood pressure",d.sbp+" mmHg"],
-            ["Heart rate",d.hr+" bpm"],
-            ["Consciousness",avpuTxt],
-            ["Temperature",d.temp+" °C"]
-        ];
-        
-        $("rows").innerHTML=rows.map(function(x){
-            return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>'
-        }).join("");
-        
-        $("note").textContent=($("age").value?"Patient age: "+$("age").value+" years. ":"")+"Score securely generated via live Random Forest ML Prediction API.";
+            var b=$("band");b.className="band "+r.c;
+            b.innerHTML='<div class="score" aria-hidden="true"><div><b>'+(isCritical ? '⚠️' : '✓')+'</b><small>AI</small></div></div><div><h2>'+r.h+'</h2><p>'+r.p+'</p></div>';
+            b.setAttribute("aria-label","AI Prediction. "+r.h);
 
-        $("formView").hidden=true;$("resView").hidden=false;
-        $("t2").focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});
+            var rows=[
+                ["Respiratory rate",d.rr+" /min"],
+                ["SpO₂",d.spo2+" %"],
+                ["Breathing support",o2Txt],
+                ["Systolic blood pressure",d.sbp+" mmHg"],
+                ["Heart rate",d.hr+" bpm"],
+                ["Consciousness",avpuTxt],
+                ["Temperature",d.temp+" °C"]
+            ];
+            
+            $("rows").innerHTML=rows.map(function(x){
+                return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>'
+            }).join("");
+            
+            $("note").textContent=($("age").value?"Patient age: "+$("age").value+" years. ":"")+"Score securely generated via live Random Forest ML Prediction API.";
+
+            $("resView").hidden=false;
+            $("t2").focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});
+        }, 1500);
 
     } catch (err) {
         console.error(err);
+        $("processing-screen").classList.remove("active");
+        $("formView").hidden = false;
         alert("Connection Failed. The Render server might be asleep (it takes ~40s to wake up on the first click). Please click generate again.\n\n" + err.message);
-    } finally {
-        // Restore button state
-        btn.innerHTML = originalBtnText;
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
     }
   }
   
