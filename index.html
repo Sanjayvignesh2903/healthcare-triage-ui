@@ -1,550 +1,301 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instant Vitals Checker | Quick Health Risk Assessment</title>
-    <meta name="description" content="Enter your vital signs to instantly check if your health status is stable or requires emergency medical attention.">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'cannoli': '#F0EFE2',
-                        'amazon': '#155F49',
-                        'darkred': '#8B0000'
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { background-color: #F0EFE2; overflow: hidden; margin: 0; padding: 0; font-family: 'Uni Neue', system-ui, -apple-system, sans-serif; }
-        .font-nexa { font-family: 'Nexa Pro', system-ui, -apple-system, sans-serif; }
-        
-        #icon-bg-container { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; opacity: 0; transition: opacity 1s ease-in-out; }
-        #start-overlay { z-index: 70; }
-        #logo-container { z-index: 50; }
-        #loading-screen { z-index: 40; }
-        #processing-screen { z-index: 60; }
-        #main-screen { z-index: 10; position: relative; }
-
-        /* Clean, Floating Logo (No Dashed Border or Grid Mask) */
-        #logo-container { position: fixed; transition: all 0.8s ease-in-out; }
-        .logo-loading { top: 3%; left: 50%; transform: translate(-50%, 0) scale(1); }
-        .logo-corner { top: 1.5rem; left: 2rem; transform: translate(0, 0) scale(0.85); transform-origin: top left; }
-
-        .fade-transition { transition: opacity 0.4s ease-in-out; }
-        .hidden-screen { opacity: 0; pointer-events: none; }
-        .active-screen { opacity: 1; pointer-events: auto; }
-        
-        .icon-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr);
-            grid-template-rows: repeat(8, 1fr);
-            width: 100vw;
-            height: 100vh;
-            align-items: center;
-            justify-items: center;
-        }
-
-        @keyframes glitter {
-            0%, 100% { filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.8)) brightness(1.5); transform: scale(1.1) rotate(0deg); stroke: #8B0000; }
-            25% { filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1)) drop-shadow(0 0 10px rgba(255, 0, 0, 0.8)) brightness(2.2); transform: scale(1.2) rotate(-5deg); stroke: #FF2A2A; }
-            50% { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 1)) brightness(1.7); transform: scale(1.1) rotate(5deg); stroke: #8B0000; }
-            75% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 0 12px rgba(255, 215, 0, 1)) brightness(2.5); transform: scale(1.25) rotate(-2deg); stroke: #FF5555; }
-        }
-
-        .bg-icon {
-            stroke: rgba(21, 95, 73, 0.25); 
-            fill: none;
-            stroke-width: 1.5;
-            width: 28px;
-            height: 28px;
-            transition: transform 0.3s ease, filter 0.3s ease, stroke 0.3s ease;
-            pointer-events: auto;
-        }
-        .bg-icon:hover {
-            animation: glitter 0.5s infinite linear;
-            z-index: 5;
-            transition: none;
-        }
-
-        input, select { border: 2px solid #155F49; background: #F0EFE2; transition: all 0.2s; }
-        input:focus, select:focus { outline: none; border-color: #8B0000; box-shadow: 0 0 0 3px rgba(139, 0, 0, 0.1); }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Instant Vitals Checker | NEWS2 Triage</title>
+<style>
+:root{
+  --bg:#f0eee0;--ink:#14473a;--green:#1a5f4a;--red:#8b0000;--card:#fff;--muted:#5b6b66;--line:#c3cfc9;--field:#fff;--ph:#8a98a3;--err:#a40e0e;
+  --low-fg:#14473a;--low-bg:#e6efeb;--lm-fg:#6b5300;--lm-bg:#fbf3d6;--med-fg:#8f4308;--med-bg:#fdebd3;--hi-fg:#8b0000;--hi-bg:#f9dcdc;
+  --glyph:rgba(26,95,74,.16);
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1a17;--ink:#d7ebe3;--green:#1f7a5e;--card:#17251f;--muted:#9db5ab;--line:#35504a;--field:#101c18;--ph:#6f8780;--err:#ff8a8a;
+  --low-fg:#bfe6d5;--low-bg:#1c3a31;--lm-fg:#f3dd8a;--lm-bg:#3a3315;--med-fg:#ffc890;--med-bg:#43290f;--hi-fg:#ffb3b3;--hi-bg:#4a1717;--glyph:rgba(120,200,170,.12);color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1a17;--ink:#d7ebe3;--green:#1f7a5e;--card:#17251f;--muted:#9db5ab;--line:#35504a;--field:#101c18;--ph:#6f8780;--err:#ff8a8a;--low-fg:#bfe6d5;--low-bg:#1c3a31;--lm-fg:#f3dd8a;--lm-bg:#3a3315;--med-fg:#ffc890;--med-bg:#43290f;--hi-fg:#ffb3b3;--hi-bg:#4a1717;--glyph:rgba(120,200,170,.12);color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='%231a5f4a' stroke-opacity='.13' stroke-width='2'%3E%3Cpath d='M30 40h12v-12h10v12h12v10H52v12H42V50H30z'/%3E%3Ccircle cx='150' cy='45' r='14'/%3E%3Cpath d='M20 150h30l8-18 12 36 10-18h30'/%3E%3Ccircle cx='165' cy='165' r='12'/%3E%3Ccircle cx='165' cy='165' r='4'/%3E%3C/svg%3E")}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 20px 40px}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.brand svg{width:44px;height:52px;flex:none}
+.brand b{display:block;font-size:1.15rem;font-weight:800;line-height:1.1}
+.brand span{display:block;letter-spacing:.18em;font-size:.75rem;font-weight:500}
+.card{max-width:760px;margin:0 auto;background:var(--card);border-radius:22px;border-top:10px solid var(--red);box-shadow:0 14px 40px rgba(20,71,58,.14);padding:32px 36px 28px}
+h1{margin:0;text-align:center;font-size:clamp(1.7rem,4.5vw,2.4rem);font-weight:800;line-height:1.15}
+.sub{text-align:center;margin:6px 0 4px;font-size:.78rem;font-weight:700;letter-spacing:.14em;color:var(--green)}
+.lead{text-align:center;color:var(--muted);margin:0 0 20px;font-size:.95rem}
+.ecg{display:block;width:100%;height:36px;margin:0 0 18px}
+.ecg path{fill:none;stroke:var(--green);stroke-width:2;stroke-linejoin:round;stroke-dasharray:600;stroke-dashoffset:600;animation:draw 2.4s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+fieldset{border:0;margin:0 0 18px;padding:0;min-width:0}
+legend{padding:0;margin-bottom:10px;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 16px}
+@media(max-width:560px){.card{padding:24px 18px 22px}.grid{grid-template-columns:1fr}.brand{justify-content:center}}
+.f label{display:block;font-size:.88rem;font-weight:700;margin-bottom:5px}
+.f label i{font-style:normal;font-weight:500;color:var(--muted)}
+.inp{position:relative}
+input,select{width:100%;height:50px;border:2px solid var(--green);border-radius:8px;background:var(--field);color:var(--ink);font:inherit;font-size:1.05rem;font-weight:600;padding:0 54px 0 14px}
+select{padding-right:14px}
+input::placeholder{color:var(--ph);font-weight:500}
+input:focus,select:focus,button:focus-visible{outline:3px solid #e0a800;outline-offset:2px}
+.unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--muted);font-weight:600;pointer-events:none}
+.hint{font-size:.8rem;color:var(--muted);margin-top:4px;min-height:1.2em}
+.f.bad input{border-color:var(--err);background:color-mix(in srgb,var(--err) 7%,var(--field))}
+.f.bad .hint{color:var(--err);font-weight:700}
+.bar{display:flex;align-items:center;gap:12px;margin:6px 0 14px;font-size:.85rem;color:var(--muted)}
+.track{flex:1;height:6px;background:var(--line);border-radius:6px;overflow:hidden}
+.track div{height:100%;width:0;background:var(--green);transition:width .25s}
+.summary{display:none;border:2px solid var(--err);border-radius:10px;padding:10px 14px;margin-bottom:14px;color:var(--err);font-weight:700;font-size:.92rem}
+.summary.on{display:block}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;transition:transform .1s,filter .15s}
+.btn:hover{filter:brightness(1.1)}.btn:active{transform:scale(.99)}
+.btn.sec{background:transparent;color:var(--green);border:2px solid var(--green);width:auto;padding:0 22px;font-size:.95rem}
+:root[data-theme="dark"] .btn.sec,.dk .btn.sec{color:var(--ink)}
+.links{display:flex;justify-content:center;gap:22px;margin-top:12px}
+.link{background:none;border:0;color:var(--green);font:inherit;font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:underline;padding:8px;min-height:40px}
+.res-top{text-align:center}
+.res-top h1{font-size:clamp(1.5rem,4vw,2rem)}
+.band{margin:16px 0;border-radius:14px;border-left:10px solid;padding:18px 20px;display:flex;gap:18px;align-items:center}
+.score{flex:none;width:84px;height:84px;border-radius:50%;border:5px solid;display:grid;place-items:center;text-align:center;line-height:1}
+.score b{font-size:2.1rem;font-weight:800}.score small{display:block;font-size:.62rem;font-weight:700;letter-spacing:.08em;margin-top:2px}
+.band h2{margin:0 0 4px;font-size:1.25rem;line-height:1.2}.band p{margin:0}
+.low{background:var(--low-bg);color:var(--low-fg);border-color:var(--low-fg)}
+.lm{background:var(--lm-bg);color:var(--lm-fg);border-color:var(--lm-fg)}
+.med{background:var(--med-bg);color:var(--med-fg);border-color:var(--med-fg)}
+.hi{background:var(--hi-bg);color:var(--hi-fg);border-color:var(--hi-fg)}
+@media(max-width:480px){.band{flex-direction:column;text-align:center}}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.93rem}
+caption{text-align:left;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:6px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:.8rem;color:var(--muted)}td:last-child,th:last-child{text-align:right}
+tr.red td{background:var(--hi-bg);color:var(--hi-fg);font-weight:700}
+.pill{display:inline-block;min-width:28px;text-align:center;border-radius:20px;padding:1px 9px;font-weight:800;background:var(--low-bg);color:var(--low-fg)}
+tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
+.note{font-size:.85rem;color:var(--muted);margin:12px 0}
+.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}.row .btn{flex:1;min-width:170px;width:auto}
+.disc{margin:18px auto 0;max-width:760px;text-align:center;font-size:.8rem;color:var(--muted)}
+[hidden]{display:none!important}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ecg path{stroke-dashoffset:0}}
+</style>
 </head>
-<body class="text-amazon h-screen w-screen flex flex-col">
+<body>
+<div class="wrap">
+  <div class="brand">
+    <svg viewBox="0 0 60 70" aria-hidden="true"><path d="M30 2 56 12v26c0 17-11 27-26 31C15 65 4 55 4 38V12z" fill="#1a5f4a"/><path d="M8 36h12l5-12 9 22 5-12h13" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/><circle cx="30" cy="32" r="7" fill="#fff"/><path d="M30 27v10M25 32h10" stroke="#a40e0e" stroke-width="3"/></svg>
+    <div><b>Instant Vitals</b><span>CHECKER</span></div>
+  </div>
 
-    <div id="icon-bg-container" class="icon-grid"></div>
-
-    <!-- Initialization Screen -->
-    <div id="start-overlay" class="fixed inset-0 bg-cannoli flex flex-col items-center justify-center fade-transition">
-        <button id="start-btn" class="bg-amazon text-cannoli px-8 py-4 rounded-full text-xl font-bold hover:bg-darkred transition-colors shadow-lg font-nexa">
-            Initialize System
-        </button>
-    </div>
-
-    <!-- Clean, Floating Logo -->
-    <div id="logo-container" class="opacity-0 fade-transition logo-loading flex flex-col items-center">
-        <svg width="60" height="70" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="mx-auto">
-            <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="#155F49"/>
-            <path d="M15 55 H28 L33 35 L38.5 55" stroke="#F0EFE2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M61.5 55 L67 80 L73 55 H85" stroke="#F0EFE2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#F0EFE2" stroke="#8B0000" stroke-width="3" stroke-linejoin="round"/>
-        </svg>
-        <h1 class="text-2xl font-extrabold mt-1 tracking-tight text-amazon text-center leading-tight font-nexa">
-            Instant Vitals <br/> <span class="font-normal text-xl tracking-widest uppercase mt-0.5 block">Checker</span>
-        </h1>
-    </div>
-
-    <!-- 3D ECG Machine Loading Screen -->
-    <div id="loading-screen" class="fixed inset-0 flex flex-col items-center justify-center fade-transition hidden-screen bg-cannoli pt-40">
-        <div class="relative bg-[#E5E5D8] p-4 pb-8 rounded-3xl shadow-2xl border-b-8 border-gray-300 w-full max-w-4xl mx-6 flex flex-col items-center">
-            <div class="bg-[#0A0D14] w-full h-72 rounded-xl relative overflow-hidden border-4 border-[#2A2E35] shadow-inner mb-6">
-                <div class="absolute inset-0 opacity-20" style="background-image: linear-gradient(#155F49 1px, transparent 1px), linear-gradient(90deg, #155F49 1px, transparent 1px); background-size: 20px 20px;"></div>
-                <canvas id="ecg-canvas" class="absolute inset-0 w-full h-full"></canvas>
+  <main class="card">
+    <section id="formView" aria-labelledby="t1">
+      <h1 id="t1">Your health, in seconds</h1>
+      <p class="sub">AI AUTOMATED TRIAGE PROTOCOL</p>
+      <p class="lead">Enter the latest observations. Our Machine Learning model will generate a live triage score.</p>
+      <svg class="ecg" viewBox="0 0 600 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20h120l6-4 6 4h30l6-18 8 32 8-14h40l6-4 6 4h80l6-18 8 32 8-14h90l6-4 6 4h50"/></svg>
+      <form id="f" novalidate>
+        <div class="summary" id="sum" role="alert" tabindex="-1"></div>
+        <fieldset>
+          <legend>Vital signs</legend>
+          <div class="grid">
+            <div class="f" data-id="hr"><label for="hr">Heart rate * <i>(pulse)</i></label><div class="inp"><input id="hr" type="number" inputmode="numeric" step="1" placeholder="e.g. 78" autocomplete="off"><span class="unit">bpm</span></div><div class="hint">Typical adult: 60–100</div></div>
+            <div class="f" data-id="sbp"><label for="sbp">Systolic blood pressure *</label><div class="inp"><input id="sbp" type="number" inputmode="numeric" step="1" placeholder="e.g. 120" autocomplete="off"><span class="unit">mmHg</span></div><div class="hint">The top number</div></div>
+            <div class="f" data-id="rr"><label for="rr">Respiratory rate *</label><div class="inp"><input id="rr" type="number" inputmode="numeric" step="1" placeholder="e.g. 16" autocomplete="off"><span class="unit">/min</span></div><div class="hint">Breaths per minute</div></div>
+            <div class="f" data-id="spo2"><label for="spo2">Oxygen saturation (SpO₂) *</label><div class="inp"><input id="spo2" type="number" inputmode="numeric" step="1" placeholder="e.g. 97" autocomplete="off"><span class="unit">%</span></div><div class="hint">Typical: 95–100</div></div>
+            <div class="f" data-id="temp"><label for="temp">Temperature *</label><div class="inp"><input id="temp" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 36.8" autocomplete="off"><span class="unit">°C</span></div><div class="hint">Typical: 36.1–37.2</div></div>
+            <div class="f" data-id="age"><label for="age">Age <i>(optional)</i></label><div class="inp"><input id="age" type="number" inputmode="numeric" step="1" placeholder="e.g. 55" autocomplete="off"><span class="unit">years</span></div><div class="hint">Recorded for reference; not scored</div></div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Clinical status</legend>
+          <div class="grid">
+            <div class="f">
+                <label for="o2">Breathing support *</label>
+                <select id="o2">
+                    <option value="0">Room air</option>
+                    <option value="1">Supplemental oxygen</option>
+                </select>
             </div>
-            <div class="flex justify-between w-full px-8 items-center">
-                <div class="flex gap-4">
-                    <div class="w-8 h-3 bg-darkred rounded shadow-sm"></div>
-                    <div class="w-8 h-3 bg-amazon rounded shadow-sm"></div>
-                    <div class="w-8 h-3 bg-gray-400 rounded shadow-sm"></div>
-                </div>
-                <div class="grid grid-cols-5 gap-2">
-                    <div class="w-8 h-4 bg-gray-400/50 rounded shadow-sm"></div>
-                    <div class="w-8 h-4 bg-gray-400/50 rounded shadow-sm"></div>
-                    <div class="w-8 h-4 bg-gray-400/50 rounded shadow-sm"></div>
-                    <div class="w-8 h-4 bg-gray-400/50 rounded shadow-sm"></div>
-                    <div class="w-8 h-4 bg-gray-400/50 rounded shadow-sm"></div>
-                </div>
-                <div class="w-14 h-14 bg-gray-200 rounded-full shadow-md flex items-center justify-center border-b-4 border-gray-300">
-                    <div class="w-1 h-4 bg-gray-400 rounded-full -mt-6"></div>
-                </div>
+            <div class="f">
+                <label for="avpu">Consciousness *</label>
+                <select id="avpu">
+                    <option value="1">Alert</option>
+                    <option value="0">New confusion</option>
+                    <option value="0">Responds to voice</option>
+                    <option value="0">Responds to pain</option>
+                    <option value="0">Unresponsive</option>
+                </select>
             </div>
-        </div>
-    </div>
+          </div>
+        </fieldset>
+        <div class="bar"><span id="cnt">0 of 5 vitals entered</span><div class="track" aria-hidden="true"><div id="pg"></div></div></div>
+        <button class="btn" type="submit" id="submit-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Generate Triage Score</button>
+        <div class="links"><button type="button" class="link" id="sample">Use sample values</button><button type="button" class="link" id="clear">Clear form</button></div>
+      </form>
+    </section>
 
-    <!-- Processing Interstitial Screen -->
-    <div id="processing-screen" class="fixed inset-0 bg-cannoli flex flex-col items-center justify-center fade-transition hidden-screen z-50">
-        <div class="flex flex-col items-center animate-pulse">
-            <svg width="80" height="90" viewBox="0 0 100 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="#155F49"/>
-                <path d="M15 55 H28 L33 35 L38.5 55" stroke="#F0EFE2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M61.5 55 L67 80 L73 55 H85" stroke="#F0EFE2" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#F0EFE2" stroke="#8B0000" stroke-width="3" stroke-linejoin="round"/>
-            </svg>
-            <h2 class="text-2xl font-bold text-amazon font-nexa mt-6 tracking-wide">Analyzing clinical parameters...</h2>
-        </div>
-    </div>
+    <section id="resView" hidden aria-labelledby="t2">
+      <div class="res-top"><h1 id="t2" tabindex="-1">Assessment Complete</h1></div>
+      <div class="band" id="band" role="status"></div>
+      <div class="tw">
+          <table>
+              <caption>Recorded Observations</caption>
+              <thead><tr><th>Observation</th><th>Reading</th></tr></thead>
+              <tbody id="rows"></tbody>
+          </table>
+      </div>
+      <p class="note" id="note"></p>
+      <div class="row"><button class="btn sec" id="edit" type="button">← Edit readings</button><button class="btn" id="again" type="button">Perform New Assessment</button></div>
+    </section>
+  </main>
+  <p class="disc">Decision support only, based on the Random Forest Machine Learning model. It does not replace clinical judgement. If someone is seriously unwell, call your local emergency number.</p>
+</div>
 
-    <!-- Main Form & Results Screen Layout -->
-    <div id="main-screen" class="fixed inset-0 pt-32 pb-4 px-6 flex flex-col items-center justify-center fade-transition hidden-screen pointer-events-none">
-        <div class="w-full max-w-4xl bg-white p-8 rounded-2xl shadow-xl border-t-8 border-darkred relative z-10 pointer-events-auto">
-            
-            <!-- Section 1: The Form -->
-            <div id="form-section">
-                <div class="text-center mb-8">
-                    <h2 class="text-4xl font-extrabold text-amazon font-nexa">Your health, in seconds</h2>
-                    <p class="text-amazon/70 text-sm font-bold tracking-widest uppercase mt-2">NEWS2 Automated Triage Protocol</p>
-                </div>
-
-                <form id="triage-form" class="grid grid-cols-1 md:grid-cols-4 gap-5">
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">Age</label>
-                        <input type="number" id="age" required class="w-full p-2.5 rounded text-amazon font-bold" placeholder="e.g. 55">
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">Heart Rate</label>
-                        <input type="number" id="hr" required class="w-full p-2.5 rounded text-amazon font-bold" placeholder="BPM">
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">Systolic BP</label>
-                        <input type="number" id="bp" required class="w-full p-2.5 rounded text-amazon font-bold" placeholder="mmHg">
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">Resp Rate</label>
-                        <input type="number" id="resp" required class="w-full p-2.5 rounded text-amazon font-bold" placeholder="/min">
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">SpO2 %</label>
-                        <input type="number" id="spo2" required class="w-full p-2.5 rounded text-amazon font-bold" placeholder="%">
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">Temp (°C)</label>
-                        <input type="number" id="temp" required step="0.1" class="w-full p-2.5 rounded text-amazon font-bold" placeholder="°C">
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">O2 Supp</label>
-                        <select id="supp_o2" class="w-full p-2.5 rounded font-bold">
-                            <option value="0">No</option>
-                            <option value="1">Yes</option>
-                        </select>
-                    </div>
-                    <div class="md:col-span-1">
-                        <label class="block text-xs font-bold text-amazon mb-1">Alertness</label>
-                        <select id="alert" class="w-full p-2.5 rounded font-bold">
-                            <option value="1">Alert</option>
-                            <option value="0">Not Alert</option>
-                        </select>
-                    </div>
-
-                    <div class="col-span-1 md:col-span-4 mt-4">
-                        <button type="button" onclick="testPrediction()" class="w-full bg-amazon hover:bg-[#0f4434] text-white font-bold py-4 rounded-lg transition-all shadow-md flex justify-center items-center gap-2">
-                            <svg class="w-5 h-5 text-darkred" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                            <span class="font-nexa text-lg">Generate Triage Score</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Section 2: The Dedicated Results -->
-            <div id="result-section" class="hidden flex-col items-center w-full">
-                <div class="text-center mb-6">
-                    <h2 class="text-3xl font-extrabold text-amazon font-nexa">Assessment Complete</h2>
-                </div>
-                <div id="result-box" class="w-full p-8 rounded-xl border-l-8 text-left shadow-sm">
-                    <h3 class="text-2xl font-bold font-nexa" id="result-title"></h3>
-                    <p id="result-desc" class="text-lg mt-2 font-medium"></p>
-                </div>
-                <button type="button" onclick="resetForm()" class="mt-8 bg-cannoli text-amazon border-2 border-amazon hover:bg-amazon hover:text-white font-bold py-3 px-8 rounded-lg transition-all font-nexa">
-                    Perform New Assessment
-                </button>
-            </div>
-
-        </div>
-    </div>
-
-    <script>
-        function initIconBackground() {
-            const container = document.getElementById('icon-bg-container');
-            const svgs = [
-                '<path d="M2 12 h4 l2 -5 l4 10 l2 -5 h8" stroke-linejoin="round"/>', 
-                '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z M12 6 v-4 h4"/>',
-                '<path d="M6 4 c0 4, 12 12, 12 16 M18 4 c0 4, -12 12, -12 16 M6 8 h12 M6 16 h12 M9 12 h6"/>',
-                '<path d="M9 3 h6 v6 h6 v6 h-6 v6 h-6 v-6 h-6 v-6 h6 z"/>',
-                '<path d="M12 2 v20 M12 6 l-4 -4 M12 6 l4 -4 M8 8 c4 -4, 8 4, 4 8 c-4 4, 4 8, 0 12 M16 8 c-4 -4, -8 4, -4 8 c4 4, -4 8, 0 12"/>',
-                '<path d="M12 12 m-8 0 a8 8 0 1 0 16 0 a8 8 0 1 0 -16 0 M12 12 m-2 0 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 M18 6 m-1 0 a1 1 0 1 0 2 0 a1 1 0 1 0 -2 0"/>',
-                '<path d="M6 6 a3 3 0 0 1 6 0 v4 a3 3 0 0 1 -6 0 z M14 14 a3 3 0 0 1 6 0 v4 a3 3 0 0 1 -6 0 z M4 14 h4 M16 6 h4"/>',
-                '<path d="M14 6 a4 4 0 0 0 -8 0 v8 a4 4 0 0 0 8 0 M10 14 v4 M6 18 h8 M16 12 l4 4 v2"/>',
-                '<path d="M2 12 h4 v-6 h4 v12 h4 v-6 h8" stroke-linejoin="round"/>',
-                '<path d="M12 20 a8 8 0 0 1 -8 -8 a4 4 0 0 1 4 -4 a4 4 0 0 1 8 0 a4 4 0 0 1 4 4 a8 8 0 0 1 -8 8 z M12 4 v16"/>',
-                '<path d="M6 6 m-2 0 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 M18 6 m-2 0 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 M12 18 m-2 0 a2 2 0 1 0 4 0 a2 2 0 1 0 -4 0 M7.5 7.5 l3 9 M16.5 7.5 l-3 9 M8 6 h8"/>',
-                '<path d="M12 2 v20 M10 6 c2 -2, 4 2, 2 4 c-2 2, 2 6, 0 8"/>'
-            ];
-
-            const cols = 12;
-            const rows = 8;
-            
-            for(let r = 0; r < rows; r++) {
-                for(let c = 0; c < cols; c++) {
-                    // Strict Dead Zone: Keeps the top-left 3x3 sector perfectly clean behind the logo
-                    if (c < 3 && r < 3) continue;
-
-                    const svgStr = svgs[Math.floor(Math.random() * svgs.length)];
-                    const el = document.createElement('div');
-                    el.className = 'bg-icon';
-                    el.innerHTML = `<svg viewBox="0 0 24 24" width="100%" height="100%">${svgStr}</svg>`;
-                    el.style.transform = `rotate(${Math.floor(Math.random() * 4) * 90}deg)`; 
-                    
-                    const leftVW = (c * (100 / cols)) + (Math.random() * (100 / cols) * 0.7); 
-                    const topVH = (r * (100 / rows)) + (Math.random() * (100 / rows) * 0.7);
-                    
-                    el.style.position = 'absolute';
-                    el.style.left = `${leftVW}vw`;
-                    el.style.top = `${topVH}vh`;
-
-                    container.appendChild(el);
-                }
-            }
-        }
-
-        const startBtn = document.getElementById('start-btn');
-        startBtn.addEventListener('click', () => {
-            document.getElementById('start-overlay').classList.add('hidden-screen');
-            
-            const logo = document.getElementById('logo-container');
-            logo.classList.remove('opacity-0');
-            document.getElementById('loading-screen').classList.remove('hidden-screen');
-            document.getElementById('loading-screen').classList.add('active-screen');
-            
-            initIconBackground(); 
-            initAudio();
-            startCanvasAnimation();
-        });
-
-        let audioCtx;
-        function initAudio() {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const masterGain = audioCtx.createGain();
-            masterGain.connect(audioCtx.destination);
-            function playBeep(time, volume, freq) {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, time);
-                gain.gain.setValueAtTime(0, time);
-                gain.gain.linearRampToValueAtTime(volume, time + 0.05);
-                gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
-                osc.connect(gain);
-                gain.connect(masterGain);
-                osc.start(time);
-                osc.stop(time + 0.3);
-            }
-            const now = audioCtx.currentTime;
-            
-            playBeep(now + 0.3, 0.3, 400); 
-            playBeep(now + 0.9, 0.4, 450); 
-            playBeep(now + 1.5, 0.6, 500); 
-            
-            setTimeout(() => {
-                const finalOsc1 = audioCtx.createOscillator();
-                const finalOsc2 = audioCtx.createOscillator();
-                const finalGain = audioCtx.createGain();
-                finalOsc1.frequency.value = 523.25; 
-                finalOsc2.frequency.value = 659.25; 
-                finalGain.gain.setValueAtTime(0, audioCtx.currentTime);
-                finalGain.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.1);
-                finalGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-                finalOsc1.connect(finalGain); finalOsc2.connect(finalGain);
-                finalGain.connect(audioCtx.destination);
-                finalOsc1.start(); finalOsc2.start();
-                finalOsc1.stop(audioCtx.currentTime + 1); finalOsc2.stop(audioCtx.currentTime + 1);
-            }, 1800);
-        }
-
-        function startCanvasAnimation() {
-            const canvas = document.getElementById('ecg-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
-
-            const duration = 1800; 
-            const startTime = performance.now();
-            let particles = [];
-            let currentHeadX = 0, currentHeadY = canvas.height / 2;
-
-            function interpolateColor(color1, color2, factor) {
-                let result = color1.slice();
-                for (let i = 0; i < 3; i++) {
-                    result[i] = Math.round(result[i] + factor * (color2[i] - color1[i]));
-                }
-                return `rgb(${result[0]}, ${result[1]}, ${result[2]})`;
-            }
-
-            function drawFrame(currentTime) {
-                let timeElapsed = currentTime - startTime;
-                let loadProgress = Math.min(timeElapsed / duration, 1);
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Reverted Colors to Red -> Green
-                let currentColor;
-                const red = [139, 0, 0];
-                const orange = [210, 105, 30];
-                const green = [21, 95, 73];
-                
-                if (loadProgress < 0.5) {
-                    currentColor = interpolateColor(red, orange, loadProgress * 2);
-                } else {
-                    currentColor = interpolateColor(orange, green, (loadProgress - 0.5) * 2);
-                }
-
-                ctx.beginPath();
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = 3.5;
-                ctx.lineJoin = 'miter';
-                ctx.miterLimit = 2;
-                ctx.lineCap = 'butt';
-
-                const centerY = canvas.height / 2;
-                const currentDrawX = canvas.width * loadProgress;
-                
-                ctx.moveTo(0, centerY);
-                let x = 0, y = centerY;
-                
-                // Sharp Dual Peak Rectilinear EKG Waveform preserved
-                while (x < currentDrawX) {
-                    y = centerY;
-                    let relativeX = x % 300; 
-                    if (relativeX > 25 && relativeX < 40) {
-                        y = centerY - 15; 
-                    } else if (relativeX >= 60 && relativeX < 67) {
-                        y = centerY + 12; 
-                    } else if (relativeX >= 67 && relativeX < 73) {
-                        y = centerY - 115; 
-                    } else if (relativeX >= 73 && relativeX < 80) {
-                        y = centerY + 85; 
-                    } else if (relativeX >= 80 && relativeX < 85) {
-                        y = centerY; 
-                    } else if (relativeX >= 105 && relativeX < 118) {
-                        y = centerY - 40; 
-                    } else if (relativeX >= 118 && relativeX < 125) {
-                        y = centerY + 20; 
-                    }
-                    ctx.lineTo(x, y);
-                    x += 2;
-                }
-                ctx.stroke();
-
-                currentHeadX = x;
-                currentHeadY = y;
-
-                if (loadProgress < 0.90 && Math.random() < 0.4) {
-                    particles.push({
-                        x: Math.random() < 0.5 ? -30 : canvas.width + 30,
-                        y: Math.random() < 0.5 ? -30 : canvas.height + 30,
-                        type: Math.random() > 0.5 ? 'cross' : 'heart',
-                        speed: 15 + Math.random() * 10
-                    });
-                }
-
-                for (let i = particles.length - 1; i >= 0; i--) {
-                    let p = particles[i];
-                    let dx = currentHeadX - p.x;
-                    let dy = currentHeadY - p.y;
-                    let dist = Math.sqrt(dx * dx + dy * dy);
-
-                    if (dist < p.speed) {
-                        particles.splice(i, 1);
-                        continue;
-                    }
-
-                    p.x += (dx / dist) * p.speed;
-                    p.y += (dy / dist) * p.speed;
-                    
-                    ctx.fillStyle = currentColor;
-                    ctx.save();
-                    ctx.translate(p.x, p.y);
-                    if (p.type === 'cross') {
-                        ctx.fillRect(-6, -2, 12, 4);
-                        ctx.fillRect(-2, -6, 4, 12);
-                    } else {
-                        ctx.beginPath();
-                        ctx.arc(-3, 0, 3, 0, Math.PI * 2);
-                        ctx.arc(3, 0, 3, 0, Math.PI * 2);
-                        ctx.lineTo(0, 6);
-                        ctx.fill();
-                    }
-                    ctx.restore();
-                }
-
-                if (loadProgress < 1 || particles.length > 0) {
-                    requestAnimationFrame(drawFrame);
-                } else {
-                    setTimeout(() => {
-                        document.getElementById('loading-screen').classList.remove('active-screen');
-                        document.getElementById('loading-screen').classList.add('hidden-screen');
-                        
-                        document.getElementById('main-screen').classList.remove('hidden-screen');
-                        document.getElementById('main-screen').classList.add('active-screen');
-                        
-                        const logo = document.getElementById('logo-container');
-                        logo.classList.remove('logo-loading');
-                        logo.classList.add('logo-corner');
-                        
-                        document.getElementById('icon-bg-container').style.opacity = '1';
-                    }, 100);
-                }
-            }
-            requestAnimationFrame(drawFrame);
-        }
-
-        async function testPrediction() {
-    const mainScreen = document.getElementById('main-screen');
-    const processScreen = document.getElementById('processing-screen');
+<script>
+(function(){
+  var $=function(i){return document.getElementById(i)};
+  var V=[{id:"hr",n:"Heart rate",u:"bpm",min:20,max:250},{id:"sbp",n:"Systolic blood pressure",u:"mmHg",min:40,max:300},{id:"rr",n:"Respiratory rate",u:"/min",min:4,max:60},{id:"spo2",n:"Oxygen saturation",u:"%",min:50,max:100},{id:"temp",n:"Temperature",u:"°C",min:30,max:43}];
+  var AGE={id:"age",n:"Age",u:"years",min:0,max:120};
+  
+  function field(id){return document.querySelector('.f[data-id="'+id+'"]')}
+  
+  function check(spec,show){
+    var el=$(spec.id),raw=el.value.trim(),box=field(spec.id),hint=box.querySelector(".hint"),msg="";
+    if(raw===""){ if(spec.id!=="age") msg="Required." }
+    else{var x=Number(raw); if(!isFinite(x)) msg="Enter a number."; else if(x<spec.min||x>spec.max) msg="Expected "+spec.min+"–"+spec.max+" "+spec.u+". Please re-check."}
+    if(show){box.classList.toggle("bad",!!msg); if(msg){hint.dataset.o=hint.dataset.o||hint.textContent;hint.textContent=msg}else if(hint.dataset.o){hint.textContent=hint.dataset.o}; el.setAttribute("aria-invalid",msg?"true":"false")}
+    return msg;
+  }
+  
+  function progress(){
+    var n=V.filter(function(s){var v=$(s.id).value.trim();return v!==""&&!check(s,false)}).length;
+    $("cnt").textContent=n+" of 5 vitals entered";$("pg").style.width=(n*20)+"%";
+  }
+  
+  V.concat([AGE]).forEach(function(s){
+    $(s.id).addEventListener("input",function(){ if(field(s.id).classList.contains("bad"))check(s,true); progress() });
+    $(s.id).addEventListener("blur",function(){ if($(s.id).value.trim()!=="")check(s,true) });
+  });
+  
+  $("f").addEventListener("submit", function(e){
+    e.preventDefault();
+    var bad=[];V.concat([AGE]).forEach(function(s){var m=check(s,true);if(m)bad.push(s)});
+    var sum=$("sum");
+    if(bad.length){
+      sum.textContent="Please fix "+bad.length+" field"+(bad.length>1?"s":"")+": "+bad.map(function(s){return s.n}).join(", ")+".";
+      sum.classList.add("on");$(bad[0].id).focus();return;
+    }
+    sum.classList.remove("on");
+    runAPI(); // Replaced local logic with the API call function
+  });
+  
+  async function runAPI(){
+    // Gather numeric form data
+    var d={};V.forEach(function(s){d[s.id]=Number($(s.id).value)});
+    var ageVal = Number($("age").value) || 0;
+    var o2Val = Number($("o2").value);
+    var avpuVal = Number($("avpu").value);
     
-    // Hide form, show processing
-    mainScreen.classList.remove('active-screen');
-    mainScreen.classList.add('hidden-screen');
-    processScreen.classList.remove('hidden-screen');
-    processScreen.classList.add('active-screen');
+    // Get text labels for the results table
+    var avpuTxt=$("avpu").options[$("avpu").selectedIndex].text;
+    var o2Txt=$("o2").options[$("o2").selectedIndex].text;
 
-    // Build payload
-    const payload = {
-        age: parseInt(document.getElementById('age').value) || 0,
-        heart_rate: parseInt(document.getElementById('hr').value) || 0,
-        blood_pressure_systolic: parseInt(document.getElementById('bp').value) || 0,
-        respiratory_rate: parseInt(document.getElementById('resp').value) || 0,
-        spo2: parseFloat(document.getElementById('spo2').value) || 0.0,
-        temperature: parseFloat(document.getElementById('temp').value) || 0.0,
-        supplemental_oxygen: parseInt(document.getElementById('supp_o2').value) || 0,
-        consciousness_alert: parseInt(document.getElementById('alert').value) || 0
+    // Match the exact Pydantic schema required by the FastAPI backend
+    var payload = {
+        age: ageVal,
+        heart_rate: d.hr,
+        blood_pressure_systolic: d.sbp,
+        respiratory_rate: d.rr,
+        spo2: d.spo2,
+        temperature: d.temp,
+        supplemental_oxygen: o2Val,
+        consciousness_alert: avpuVal
     };
 
+    var btn = $("submit-btn");
+    var originalBtnText = btn.innerHTML;
+    
+    // UI Loading state
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg> Analyzing Data...';
+    btn.style.opacity = '0.8';
+    btn.style.pointerEvents = 'none';
+
     try {
+        // Send request to your live Render backend
         const response = await fetch('https://triage-api-1qji.onrender.com/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
-        // If the server connects but returns an error code (like 422 or 500)
         if (!response.ok) {
-            const errorDetails = await response.text();
-            throw new Error(`HTTP_${response.status}___${errorDetails}`);
+            throw new Error(`Server returned ${response.status}. Make sure Render server is awake.`);
         }
 
-        const data = await response.json(); 
+        const apiData = await response.json(); 
 
-        setTimeout(() => {
-            processScreen.classList.remove('active-screen');
-            processScreen.classList.add('hidden-screen');
+        var isCritical = (apiData.triage_level === "Critical" || apiData.prediction === 1);
+        var r;
+        
+        if(isCritical) {
+            r={c:"hi", h:"CRITICAL: Immediate Attention Required", p:"Machine learning classification indicates acute clinical escalation."};
+        } else {
+            r={c:"low", h:"STABLE: Monitor Normally", p:"Vital parameters remain within normal threshold bounds."};
+        }
 
-            const formSection = document.getElementById('form-section');
-            const resultSection = document.getElementById('result-section');
-            const box = document.getElementById('result-box');
-            const title = document.getElementById('result-title');
-            const desc = document.getElementById('result-desc');
+        var b=$("band");b.className="band "+r.c;
+        b.innerHTML='<div class="score" aria-hidden="true"><div><b>'+(isCritical ? '⚠️' : '✓')+'</b><small>AI</small></div></div><div><h2>'+r.h+'</h2><p>'+r.p+'</p></div>';
+        b.setAttribute("aria-label","AI Prediction. "+r.h);
 
-            formSection.classList.add('hidden');
-            resultSection.classList.remove('hidden');
-            resultSection.classList.add('flex');
+        var rows=[
+            ["Respiratory rate",d.rr+" /min"],
+            ["SpO₂",d.spo2+" %"],
+            ["Breathing support",o2Txt],
+            ["Systolic blood pressure",d.sbp+" mmHg"],
+            ["Heart rate",d.hr+" bpm"],
+            ["Consciousness",avpuTxt],
+            ["Temperature",d.temp+" °C"]
+        ];
+        
+        $("rows").innerHTML=rows.map(function(x){
+            return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>'
+        }).join("");
+        
+        $("note").textContent=($("age").value?"Patient age: "+$("age").value+" years. ":"")+"Score securely generated via live Random Forest ML Prediction API.";
 
-            box.className = 'w-full p-8 rounded-xl border-l-8 text-left shadow-sm';
-
-            if (data.triage_level === "Critical" || data.prediction === 1) {
-                box.classList.add('border-darkred', 'bg-darkred/10', 'text-darkred');
-                title.innerText = "CRITICAL: Immediate Attention Required";
-                desc.innerText = "Machine learning classification indicates acute clinical escalation under NEWS2 protocol.";
-            } else {
-                box.classList.add('border-amazon', 'bg-amazon/10', 'text-amazon');
-                title.innerText = "STABLE: Monitor Normally";
-                desc.innerText = "Vital parameters remain within normal threshold bounds.";
-            }
-
-            mainScreen.classList.remove('hidden-screen');
-            mainScreen.classList.add('active-screen');
-        }, 1500);
+        $("formView").hidden=true;$("resView").hidden=false;
+        $("t2").focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});
 
     } catch (err) {
-        console.error("Diagnostic Error:", err);
-        processScreen.classList.remove('active-screen');
-        processScreen.classList.add('hidden-screen');
-        mainScreen.classList.remove('hidden-screen');
-        mainScreen.classList.add('active-screen');
-
-        const errMsg = err.message || "";
-
-        // Diagnostic Sorting
-        if (errMsg.includes("Failed to fetch") || err.name === "TypeError") {
-            alert("DIAGNOSIS 1: NETWORK OR CORS BLOCK\n\nThe browser blocked the request. This means your backend CORS settings in main.py are still blocking GitHub Pages, or you have a typo in the Render URL.");
-        } else if (errMsg.includes("HTTP_422")) {
-            alert("DIAGNOSIS 2: FASTAPI DATA MISMATCH\n\n" + errMsg + "\n\nThe Python backend rejected the data because the variables sent don't perfectly match your PatientVitals BaseModel.");
-        } else if (errMsg.includes("HTTP_500")) {
-            alert("DIAGNOSIS 3: PYTHON/MODEL CRASH\n\n" + errMsg + "\n\nThe server received the data, but model.predict() crashed. Check the Render.com logs for the exact Python error.");
-        } else {
-            alert("DIAGNOSIS 4: UNKNOWN ERROR\n\n" + errMsg);
-        }
+        console.error(err);
+        alert("Connection Failed. The Render server might be asleep (it takes ~40s to wake up on the first click). Please click generate again.\n\n" + err.message);
+    } finally {
+        // Restore button state
+        btn.innerHTML = originalBtnText;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
     }
-}
-
-        function resetForm() {
-            document.getElementById('result-section').classList.add('hidden');
-            document.getElementById('result-section').classList.remove('flex');
-            document.getElementById('form-section').classList.remove('hidden');
-            document.getElementById('triage-form').reset();
-        }
-    </script>
+  }
+  
+  function back(){$("resView").hidden=true;$("formView").hidden=false;window.scrollTo({top:0,behavior:"smooth"});$("hr").focus({preventScroll:true})}
+  $("edit").onclick=back;
+  
+  function clearAll(){
+    document.querySelectorAll("input").forEach(function(i){i.value="";i.removeAttribute("aria-invalid")});
+    $("o2").selectedIndex=0;$("avpu").selectedIndex=0;$("sum").classList.remove("on");
+    document.querySelectorAll(".f.bad").forEach(function(f){f.classList.remove("bad");var h=f.querySelector(".hint");if(h.dataset.o)h.textContent=h.dataset.o});
+    progress();
+  }
+  
+  $("again").onclick=function(){clearAll();back()};
+  $("clear").onclick=function(){clearAll();$("hr").focus()};
+  $("sample").onclick=function(){clearAll();var s={hr:78,sbp:122,rr:16,spo2:97,temp:36.8,age:55};for(var k in s)$(k).value=s[k];progress()};
+  
+  progress();
+})();
+</script>
 </body>
 </html>
