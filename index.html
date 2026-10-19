@@ -3,95 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Instant Vitals Checker | NEWS2 Triage</title>
+<title>Instant Vitals Checker | Quick Health Risk Assessment</title>
+<meta name="description" content="Enter your vital signs to instantly check if your health status is stable or requires urgent medical attention.">
 <style>
+/* Colour system, 60-30-10:  60% cream neutrals  |  30% deep green (brand)  |  10% crimson (accent / alerts) */
 :root{
-  --bg:#f0eee0;--ink:#14473a;--green:#1a5f4a;--red:#8b0000;--card:#fff;--muted:#5b6b66;--line:#c3cfc9;--field:#fff;--ph:#8a98a3;--err:#a40e0e;
-  --low-fg:#14473a;--low-bg:#e6efeb;--lm-fg:#6b5300;--lm-bg:#fbf3d6;--med-fg:#8f4308;--med-bg:#fdebd3;--hi-fg:#8b0000;--hi-bg:#f9dcdc;
-  --glyph:rgba(26,95,74,.16);
-  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --cream:#F0EFE2;--paper:#FFFEFA;--line:#D9E2DC;
+  --green:#155F49;--green-d:#0F4434;--green-t:#E2ECE6;
+  --crimson:#8B0000;
+  --ink:#10231D;--muted:#5A6B64;
+  color-scheme:light;
 }
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
-  --bg:#0f1a17;--ink:#d7ebe3;--green:#1f7a5e;--card:#17251f;--muted:#9db5ab;--line:#35504a;--field:#101c18;--ph:#6f8780;--err:#ff8a8a;
-  --low-fg:#bfe6d5;--low-bg:#1c3a31;--lm-fg:#f3dd8a;--lm-bg:#3a3315;--med-fg:#ffc890;--med-bg:#43290f;--hi-fg:#ffb3b3;--hi-bg:#4a1717;--glyph:rgba(120,200,170,.12);color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#0f1a17;--ink:#d7ebe3;--green:#1f7a5e;--card:#17251f;--muted:#9db5ab;--line:#35504a;--field:#101c18;--ph:#6f8780;--err:#ff8a8a;--low-fg:#bfe6d5;--low-bg:#1c3a31;--lm-fg:#f3dd8a;--lm-bg:#3a3315;--med-fg:#ffc890;--med-bg:#43290f;--hi-fg:#ffb3b3;--hi-bg:#4a1717;--glyph:rgba(120,200,170,.12);color-scheme:dark}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='%231a5f4a' stroke-opacity='.13' stroke-width='2'%3E%3Cpath d='M30 40h12v-12h10v12h12v10H52v12H42V50H30z'/%3E%3Ccircle cx='150' cy='45' r='14'/%3E%3Cpath d='M20 150h30l8-18 12 36 10-18h30'/%3E%3Ccircle cx='165' cy='165' r='12'/%3E%3Ccircle cx='165' cy='165' r='4'/%3E%3C/svg%3E")}
-.wrap{max-width:1100px;margin:0 auto;padding:20px 20px 40px; position: relative;}
-.brand{display:flex;align-items:center;gap:12px;margin-bottom:20px}
-.brand svg{width:44px;height:52px;flex:none}
-.brand b{display:block;font-size:1.15rem;font-weight:800;line-height:1.1}
-.brand span{display:block;letter-spacing:.18em;font-size:.75rem;font-weight:500}
-.card{max-width:760px;margin:0 auto;background:var(--card);border-radius:22px;border-top:10px solid var(--red);box-shadow:0 14px 40px rgba(20,71,58,.14);padding:32px 36px 28px}
-h1{margin:0;text-align:center;font-size:clamp(1.7rem,4.5vw,2.4rem);font-weight:800;line-height:1.15}
-.sub{text-align:center;margin:6px 0 4px;font-size:.78rem;font-weight:700;letter-spacing:.14em;color:var(--green)}
-.lead{text-align:center;color:var(--muted);margin:0 0 20px;font-size:.95rem}
-.ecg{display:block;width:100%;height:36px;margin:0 0 18px}
-.ecg path{fill:none;stroke:var(--green);stroke-width:2;stroke-linejoin:round;stroke-dasharray:600;stroke-dashoffset:600;animation:draw 2.4s ease-out forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
-fieldset{border:0;margin:0 0 18px;padding:0;min-width:0}
-legend{padding:0;margin-bottom:10px;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px 16px}
-@media(max-width:560px){.card{padding:24px 18px 22px}.grid{grid-template-columns:1fr}.brand{justify-content:center}}
-.f label{display:block;font-size:.88rem;font-weight:700;margin-bottom:5px}
-.f label i{font-style:normal;font-weight:500;color:var(--muted)}
+html,body{height:100%;margin:0;overflow:hidden}
+body{display:flex;flex-direction:column;height:100dvh;color:var(--ink);background-color:var(--cream);
+  font-family:"Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.4;
+  padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220' fill='none' stroke='%23155F49' stroke-opacity='.12' stroke-width='2'%3E%3Cpath d='M30 40h12v-12h10v12h12v10H52v12H42V50H30z'/%3E%3Ccircle cx='150' cy='45' r='14'/%3E%3Cpath d='M20 150h30l8-18 12 36 10-18h30'/%3E%3Ccircle cx='165' cy='165' r='12'/%3E%3Ccircle cx='165' cy='165' r='4'/%3E%3C/svg%3E")}
+/* Header: logo sits on the same left edge as the card */
+.top{flex:none;width:min(1000px,100% - 32px);margin:0 auto;padding:16px 4px 12px;display:flex;align-items:center;gap:20px}
+.brand{display:flex;align-items:center;gap:12px;color:var(--green)}
+.brand svg{width:36px;height:42px;flex:none}
+.brand b{display:block;font-size:1.25rem;font-weight:800;line-height:1.05;letter-spacing:-.01em}
+.brand span{display:block;font-size:.7rem;font-weight:600;letter-spacing:.3em;margin-top:3px}
+.ecgline{flex:1;height:26px;min-width:0;opacity:.5}
+.ecgline path{fill:none;stroke:var(--green);stroke-width:2;vector-effect:non-scaling-stroke}
+.chip{flex:none;border:1.5px solid var(--green);color:var(--green);border-radius:99px;padding:3px 12px;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+main{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 16px 16px}
+.card{width:min(1000px,100%);max-height:100%;overflow:auto;background:var(--paper);border-radius:20px;border-top:8px solid var(--crimson);
+  box-shadow:0 14px 40px rgba(21,95,73,.16);padding:24px 32px 22px}
+h1{margin:0;text-align:center;font-size:clamp(1.6rem,3.6vw,2.2rem);font-weight:800;color:var(--green);line-height:1.15}
+.sub{margin:6px 0 18px;text-align:center;font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px 16px}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--green);margin-bottom:4px}
 .inp{position:relative}
-input,select{width:100%;height:50px;border:2px solid var(--green);border-radius:8px;background:var(--field);color:var(--ink);font:inherit;font-size:1.05rem;font-weight:600;padding:0 54px 0 14px}
-select{padding-right:14px}
-input::placeholder{color:var(--ph);font-weight:500}
-input:focus,select:focus,button:focus-visible{outline:3px solid #e0a800;outline-offset:2px}
-.unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:.85rem;color:var(--muted);font-weight:600;pointer-events:none}
-.hint{font-size:.8rem;color:var(--muted);margin-top:4px;min-height:1.2em}
-.f.bad input{border-color:var(--err);background:color-mix(in srgb,var(--err) 7%,var(--field))}
-.f.bad .hint{color:var(--err);font-weight:700}
-.bar{display:flex;align-items:center;gap:12px;margin:6px 0 14px;font-size:.85rem;color:var(--muted)}
-.track{flex:1;height:6px;background:var(--line);border-radius:6px;overflow:hidden}
-.track div{height:100%;width:0;background:var(--green);transition:width .25s}
-.summary{display:none;border:2px solid var(--err);border-radius:10px;padding:10px 14px;margin-bottom:14px;color:var(--err);font-weight:700;font-size:.92rem}
-.summary.on{display:block}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;transition:transform .1s,filter .15s}
-.btn:hover{filter:brightness(1.1)}.btn:active{transform:scale(.99)}
-.btn.sec{background:transparent;color:var(--green);border:2px solid var(--green);width:auto;padding:0 22px;font-size:.95rem}
-:root[data-theme="dark"] .btn.sec,.dk .btn.sec{color:var(--ink)}
-.links{display:flex;justify-content:center;gap:22px;margin-top:12px}
-.link{background:none;border:0;color:var(--green);font:inherit;font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:underline;padding:8px;min-height:40px}
-.res-top{text-align:center}
-.res-top h1{font-size:clamp(1.5rem,4vw,2rem)}
-.band{margin:16px 0;border-radius:14px;border-left:10px solid;padding:18px 20px;display:flex;gap:18px;align-items:center}
-.score{flex:none;width:84px;height:84px;border-radius:50%;border:5px solid;display:grid;place-items:center;text-align:center;line-height:1}
-.score b{font-size:2.1rem;font-weight:800}.score small{display:block;font-size:.62rem;font-weight:700;letter-spacing:.08em;margin-top:2px}
-.band h2{margin:0 0 4px;font-size:1.25rem;line-height:1.2}.band p{margin:0}
-.low{background:var(--low-bg);color:var(--low-fg);border-color:var(--low-fg)}
-.lm{background:var(--lm-bg);color:var(--lm-fg);border-color:var(--lm-fg)}
-.med{background:var(--med-bg);color:var(--med-fg);border-color:var(--med-fg)}
-.hi{background:var(--hi-bg);color:var(--hi-fg);border-color:var(--hi-fg)}
-@media(max-width:480px){.band{flex-direction:column;text-align:center}}
-.tw{overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:.93rem}
-caption{text-align:left;font-size:.78rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:6px}
-th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
-th{font-size:.8rem;color:var(--muted)}td:last-child,th:last-child{text-align:right}
-tr.red td{background:var(--hi-bg);color:var(--hi-fg);font-weight:700}
-.pill{display:inline-block;min-width:28px;text-align:center;border-radius:20px;padding:1px 9px;font-weight:800;background:var(--low-bg);color:var(--low-fg)}
-tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
-.note{font-size:.85rem;color:var(--muted);margin:12px 0}
-.row{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}.row .btn{flex:1;min-width:170px;width:auto}
-.disc{margin:18px auto 0;max-width:760px;text-align:center;font-size:.8rem;color:var(--muted)}
-[hidden]{display:none!important}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.ecg path{stroke-dashoffset:0}}
+input,select{width:100%;height:46px;border:2px solid var(--green);border-radius:8px;background:var(--cream);color:var(--ink);font:inherit;font-weight:700;padding:0 46px 0 12px}
+select{padding-right:8px;cursor:pointer}
+input::placeholder{color:#8a9890;font-weight:500}
+input:focus,select:focus{outline:none;border-color:var(--crimson);box-shadow:0 0 0 3px rgba(139,0,0,.15)}
+button:focus-visible{outline:3px solid var(--crimson);outline-offset:2px}
+.unit{position:absolute;right:11px;top:50%;transform:translateY(-50%);font-size:.75rem;font-weight:600;color:var(--muted);pointer-events:none}
+.err{min-height:17px;margin-top:2px;font-size:.74rem;font-weight:700;color:var(--crimson)}
+.f.bad input{border-color:var(--crimson);background:#fbeeee}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 24px;border:2px solid var(--green);border-radius:10px;background:var(--green);color:#fff;font:inherit;font-weight:800;font-size:1rem;cursor:pointer;transition:background .15s}
+.btn:hover{background:var(--green-d)}
+.btn.sec{background:transparent;color:var(--green)}
+.btn.sec:hover{background:var(--green-t)}
+.cta{width:100%;margin-top:6px}
+.cta svg{color:#ffb3b3}
+.links{display:flex;justify-content:center;gap:20px;margin-top:6px}
+.link{background:none;border:0;color:var(--green);font:inherit;font-size:.84rem;font-weight:700;text-decoration:underline;cursor:pointer;padding:6px 4px}
+.busy{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:330px;text-align:center}
 
-/* --- NEW: Fullscreen Processing Animation CSS --- */
-#processing-screen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg); 
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-}
-#processing-screen.active {
-  opacity: 1; pointer-events: auto;
-}
+/* Restored Pulsing Logo Animation & Slogan */
 .pulse-box {
   display: flex; flex-direction: column; align-items: center;
   animation: pulse 1.5s infinite ease-in-out;
@@ -101,237 +65,225 @@ tr.red .pill{background:var(--hi-fg);color:var(--hi-bg)}
   50% { opacity: 0.7; transform: scale(1.05); }
 }
 .slogan {
-  margin-top: 24px; font-size: 1.3rem; font-weight: 800; color: var(--green); letter-spacing: 0.05em; text-align: center;
+  margin-top: 18px; font-size: 1.25rem; font-weight: 800; color: var(--green); letter-spacing: 0.05em; text-align: center;
 }
+
+.busy p{margin:0;color:var(--muted);font-size:.9rem;min-height:1.3em}
+.rgrid{display:grid;grid-template-columns:1fr 1.1fr;gap:20px;margin-top:14px}
+.banner{border-radius:14px;border-left:10px solid var(--fg);background:var(--bg);color:var(--fg);padding:20px 22px;height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.ring{width:66px;height:66px;border:5px solid var(--fg);border-radius:50%;display:grid;place-items:center;font-size:2rem;font-weight:800;line-height:1}
+.banner h2{margin:0;font-size:1.3rem;line-height:1.2}.banner p{margin:0;font-weight:500}.banner small{opacity:.85;font-size:.78rem}
+.rh{font-size:.74rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.obs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.obs div{border:1px solid var(--line);border-radius:10px;padding:7px 12px;background:#fff}
+.obs dt{font-size:.72rem;color:var(--muted);font-weight:600}.obs dd{margin:0;font-weight:800;color:var(--green)}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}.actions .btn{flex:1;min-width:170px}
+.disc{margin:12px 0 0;text-align:center;font-size:.72rem;color:var(--muted)}
+[hidden]{display:none!important}
+@media(max-width:760px){.grid{grid-template-columns:1fr 1fr}.rgrid{grid-template-columns:1fr}.card{padding:18px 16px}.chip,.ecgline{display:none}.sub{margin-bottom:12px}}
+@media(max-height:700px){h1{font-size:1.45rem}.sub{margin-bottom:10px}.card{padding:14px 24px}input,select{height:40px}.top{padding:10px 4px 8px}}
+@media(prefers-reduced-motion:reduce){.pulse-box{animation-duration:3s}}
 </style>
 </head>
 <body>
-
-<!-- Processing Interstitial Screen -->
-<div id="processing-screen">
-  <div class="pulse-box">
-    <!-- Restored Classic Logo -->
-    <svg width="80" height="96" viewBox="0 0 100 120" fill="none" aria-hidden="true">
-      <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="var(--green)"/>
-      <path d="M15 55 H28 L33 35 L38.5 55" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M61.5 55 L67 80 L73 55 H85" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#fff" stroke="var(--err)" stroke-width="4" stroke-linejoin="round"/>
-    </svg>
-    <div class="slogan">Analyzing clinical parameters...</div>
-  </div>
-</div>
-
-<div class="wrap">
+<header class="top">
   <div class="brand">
-    <!-- Restored Classic Logo for Header -->
     <svg viewBox="0 0 100 120" fill="none" aria-hidden="true">
-      <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="var(--green)"/>
-      <path d="M15 55 H28 L33 35 L38.5 55" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M61.5 55 L67 80 L73 55 H85" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#fff" stroke="var(--err)" stroke-width="4" stroke-linejoin="round"/>
+        <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="var(--green)"/>
+        <path d="M15 55 H28 L33 35 L38.5 55" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M61.5 55 L67 80 L73 55 H85" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#fff" stroke="var(--crimson)" stroke-width="4" stroke-linejoin="round"/>
     </svg>
     <div><b>Instant Vitals</b><span>CHECKER</span></div>
   </div>
+  <svg class="ecgline" viewBox="0 0 400 26" preserveAspectRatio="none" aria-hidden="true"><path d="M0 14h110l5-3 5 3h28l5-12 7 24 6-12h60l5-3 5 3h74"/></svg>
+  <span class="chip">NEWS2 · ML-assisted</span>
+</header>
 
-  <main class="card">
-    <section id="formView" aria-labelledby="t1">
-      <h1 id="t1">Your health, in seconds</h1>
-      <p class="sub">AI AUTOMATED TRIAGE PROTOCOL</p>
-      <p class="lead">Enter the latest observations. Our Machine Learning model will generate a live triage score.</p>
-      <svg class="ecg" viewBox="0 0 600 36" preserveAspectRatio="none" aria-hidden="true"><path d="M0 20h120l6-4 6 4h30l6-18 8 32 8-14h40l6-4 6 4h80l6-18 8 32 8-14h90l6-4 6 4h50"/></svg>
+<main>
+  <div class="card">
+    <section id="formView">
+      <h1>Your health, in seconds</h1>
+      <p class="sub">NEWS2 automated triage protocol</p>
       <form id="f" novalidate>
-        <div class="summary" id="sum" role="alert" tabindex="-1"></div>
-        <fieldset>
-          <legend>Vital signs</legend>
-          <div class="grid">
-            <div class="f" data-id="hr"><label for="hr">Heart rate * <i>(pulse)</i></label><div class="inp"><input id="hr" type="number" inputmode="numeric" step="1" placeholder="e.g. 78" autocomplete="off"><span class="unit">bpm</span></div><div class="hint">Typical adult: 60–100</div></div>
-            <div class="f" data-id="sbp"><label for="sbp">Systolic blood pressure *</label><div class="inp"><input id="sbp" type="number" inputmode="numeric" step="1" placeholder="e.g. 120" autocomplete="off"><span class="unit">mmHg</span></div><div class="hint">The top number</div></div>
-            <div class="f" data-id="rr"><label for="rr">Respiratory rate *</label><div class="inp"><input id="rr" type="number" inputmode="numeric" step="1" placeholder="e.g. 16" autocomplete="off"><span class="unit">/min</span></div><div class="hint">Breaths per minute</div></div>
-            <div class="f" data-id="spo2"><label for="spo2">Oxygen saturation (SpO₂) *</label><div class="inp"><input id="spo2" type="number" inputmode="numeric" step="1" placeholder="e.g. 97" autocomplete="off"><span class="unit">%</span></div><div class="hint">Typical: 95–100</div></div>
-            <div class="f" data-id="temp"><label for="temp">Temperature *</label><div class="inp"><input id="temp" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 36.8" autocomplete="off"><span class="unit">°C</span></div><div class="hint">Typical: 36.1–37.2</div></div>
-            <div class="f" data-id="age"><label for="age">Age <i>(optional)</i></label><div class="inp"><input id="age" type="number" inputmode="numeric" step="1" placeholder="e.g. 55" autocomplete="off"><span class="unit">years</span></div><div class="hint">Recorded for reference; not scored</div></div>
-          </div>
-        </fieldset>
-        <fieldset>
-          <legend>Clinical status</legend>
-          <div class="grid">
-            <div class="f">
-                <label for="o2">Breathing support *</label>
-                <select id="o2">
-                    <option value="0">Room air</option>
-                    <option value="1">Supplemental oxygen</option>
-                </select>
-            </div>
-            <div class="f">
-                <label for="avpu">Consciousness *</label>
-                <select id="avpu">
-                    <option value="1">Alert</option>
-                    <option value="0">New confusion</option>
-                    <option value="0">Responds to voice</option>
-                    <option value="0">Responds to pain</option>
-                    <option value="0">Unresponsive</option>
-                </select>
-            </div>
-          </div>
-        </fieldset>
-        <div class="bar"><span id="cnt">0 of 5 vitals entered</span><div class="track" aria-hidden="true"><div id="pg"></div></div></div>
-        <button class="btn" type="submit" id="submit-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg>Generate Triage Score</button>
+        <div class="grid">
+          <div class="f" data-id="age"><label for="age">Age</label><div class="inp"><input id="age" type="number" inputmode="numeric" placeholder="e.g. 55"><span class="unit">yrs</span></div><div class="err"></div></div>
+          <div class="f" data-id="hr"><label for="hr">Heart rate</label><div class="inp"><input id="hr" type="number" inputmode="numeric" placeholder="e.g. 78"><span class="unit">bpm</span></div><div class="err"></div></div>
+          <div class="f" data-id="bp"><label for="bp">Systolic BP</label><div class="inp"><input id="bp" type="number" inputmode="numeric" placeholder="e.g. 120"><span class="unit">mmHg</span></div><div class="err"></div></div>
+          <div class="f" data-id="rr"><label for="rr">Respiratory rate</label><div class="inp"><input id="rr" type="number" inputmode="numeric" placeholder="e.g. 16"><span class="unit">/min</span></div><div class="err"></div></div>
+          <div class="f" data-id="spo2"><label for="spo2">SpO₂</label><div class="inp"><input id="spo2" type="number" inputmode="numeric" placeholder="e.g. 97"><span class="unit">%</span></div><div class="err"></div></div>
+          <div class="f" data-id="temp"><label for="temp">Temperature</label><div class="inp"><input id="temp" type="number" inputmode="decimal" step="0.1" placeholder="e.g. 36.8"><span class="unit">°C</span></div><div class="err"></div></div>
+          <div class="f"><label for="o2">Breathing support</label><select id="o2"><option value="0">Room air</option><option value="1">Supplemental oxygen</option></select><div class="err"></div></div>
+          <div class="f"><label for="alert">Consciousness</label><select id="alert"><option value="1">Alert</option><option value="0">Not alert</option></select><div class="err"></div></div>
+        </div>
+        <button class="btn cta" type="submit"><svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.7-9.3a1 1 0 00-1.4-1.4L9 10.6 7.7 9.3a1 1 0 00-1.4 1.4l2 2a1 1 0 001.4 0l4-4z" clip-rule="evenodd"/></svg>Generate Triage Score</button>
         <div class="links"><button type="button" class="link" id="sample">Use sample values</button><button type="button" class="link" id="clear">Clear form</button></div>
       </form>
     </section>
 
-    <section id="resView" hidden aria-labelledby="t2">
-      <div class="res-top"><h1 id="t2" tabindex="-1">Assessment Complete</h1></div>
-      <div class="band" id="band" role="status"></div>
-      <div class="tw">
-          <table>
-              <caption>Recorded Observations</caption>
-              <thead><tr><th>Observation</th><th>Reading</th></tr></thead>
-              <tbody id="rows"></tbody>
-          </table>
-      </div>
-      <p class="note" id="note"></p>
-      <div class="row"><button class="btn sec" id="edit" type="button">← Edit readings</button><button class="btn" id="again" type="button">Perform New Assessment</button></div>
+    <!-- Updated Loading Screen with Pulsing Logo -->
+    <section id="busyView" class="busy" hidden role="status" aria-live="polite">
+        <div class="pulse-box">
+            <svg width="70" height="84" viewBox="0 0 100 120" fill="none" aria-hidden="true">
+                <path d="M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z" fill="var(--green)"/>
+                <path d="M15 55 H28 L33 35 L38.5 55" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M61.5 55 L67 80 L73 55 H85" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M46 44 H54 V51 H61 V59 H54 V66 H46 V59 H39 V51 H46 V44 Z" fill="#fff" stroke="var(--crimson)" stroke-width="4" stroke-linejoin="round"/>
+            </svg>
+            <div class="slogan">Analyzing clinical parameters...</div>
+        </div>
+        <p id="wake"></p>
     </section>
-  </main>
-  <p class="disc">Decision support only, based on the Random Forest Machine Learning model. It does not replace clinical judgement. If someone is seriously unwell, call your local emergency number.</p>
-</div>
+
+    <section id="resView" hidden>
+      <h1 id="rtitle" tabindex="-1">Assessment Complete</h1>
+      <div class="rgrid">
+        <div class="banner" id="banner" role="status"><div class="ring" id="ricon" aria-hidden="true"></div><h2 id="rt"></h2><p id="rd"></p><small id="rs"></small></div>
+        <div><p class="rh">Recorded observations</p><dl class="obs" id="obs"></dl></div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="dl" type="button"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg><span id="dlt">Download report (PNG)</span></button>
+        <button class="btn sec" id="edit" type="button">← Edit readings</button>
+        <button class="btn sec" id="again" type="button">New assessment</button>
+      </div>
+      <p class="disc">Decision support only. This tool does not replace clinical judgement. In an emergency, call your local emergency number.</p>
+    </section>
+  </div>
+</main>
 
 <script>
 (function(){
+  var API="https://triage-api-1qji.onrender.com/predict";
   var $=function(i){return document.getElementById(i)};
-  var V=[{id:"hr",n:"Heart rate",u:"bpm",min:20,max:250},{id:"sbp",n:"Systolic blood pressure",u:"mmHg",min:40,max:300},{id:"rr",n:"Respiratory rate",u:"/min",min:4,max:60},{id:"spo2",n:"Oxygen saturation",u:"%",min:50,max:100},{id:"temp",n:"Temperature",u:"°C",min:30,max:43}];
-  var AGE={id:"age",n:"Age",u:"years",min:0,max:120};
-  
-  function field(id){return document.querySelector('.f[data-id="'+id+'"]')}
-  
-  function check(spec,show){
-    var el=$(spec.id),raw=el.value.trim(),box=field(spec.id),hint=box.querySelector(".hint"),msg="";
-    if(raw===""){ if(spec.id!=="age") msg="Required." }
-    else{var x=Number(raw); if(!isFinite(x)) msg="Enter a number."; else if(x<spec.min||x>spec.max) msg="Expected "+spec.min+"–"+spec.max+" "+spec.u+". Please re-check."}
-    if(show){box.classList.toggle("bad",!!msg); if(msg){hint.dataset.o=hint.dataset.o||hint.textContent;hint.textContent=msg}else if(hint.dataset.o){hint.textContent=hint.dataset.o}; el.setAttribute("aria-invalid",msg?"true":"false")}
-    return msg;
+  var SPEC=[{id:"age",n:"Age",min:0,max:120,u:"years"},{id:"hr",n:"Heart rate",min:20,max:250,u:"bpm"},{id:"bp",n:"Systolic BP",min:40,max:300,u:"mmHg"},{id:"rr",n:"Respiratory rate",min:4,max:60,u:"/min"},{id:"spo2",n:"SpO₂",min:50,max:100,u:"%"},{id:"temp",n:"Temperature",min:30,max:43,u:"°C"}];
+  var LV={
+    stable:{t:"STABLE: Monitor Normally",d:"Vital parameters remain within normal threshold bounds.",bg:"#E2ECE6",fg:"#155F49",i:"✓"},
+    watch:{t:"LOW–MODERATE: Urgent Ward Review",d:"One observation is in the highest-risk band. A prompt review by a clinician is recommended.",bg:"#FBF0D0",fg:"#6B5300",i:"!"},
+    urgent:{t:"URGENT: Clinical Review Needed",d:"The aggregate score suggests possible deterioration. Urgent review is recommended.",bg:"#FBE3CF",fg:"#8F4308",i:"!"},
+    critical:{t:"CRITICAL: Immediate Attention Required",d:"Classification indicates acute clinical escalation under the NEWS2 protocol.",bg:"#F6DCDC",fg:"#8B0000",i:"!"}
+  };
+  var last=null;
+
+  function chk(s,show){
+    var el=$(s.id),box=el.closest(".f"),raw=el.value.trim(),m="";
+    if(raw==="")m="Required";
+    else{var x=Number(raw);if(!isFinite(x))m="Enter a number";else if(x<s.min||x>s.max)m="Expected "+s.min+"–"+s.max+" "+s.u}
+    if(show){box.classList.toggle("bad",!!m);box.querySelector(".err").textContent=m;el.setAttribute("aria-invalid",m?"true":"false")}
+    return m;
   }
-  
-  function progress(){
-    var n=V.filter(function(s){var v=$(s.id).value.trim();return v!==""&&!check(s,false)}).length;
-    $("cnt").textContent=n+" of 5 vitals entered";$("pg").style.width=(n*20)+"%";
-  }
-  
-  V.concat([AGE]).forEach(function(s){
-    $(s.id).addEventListener("input",function(){ if(field(s.id).classList.contains("bad"))check(s,true); progress() });
-    $(s.id).addEventListener("blur",function(){ if($(s.id).value.trim()!=="")check(s,true) });
+  SPEC.forEach(function(s){
+    $(s.id).addEventListener("input",function(){if($(s.id).closest(".f").classList.contains("bad"))chk(s,true)});
+    $(s.id).addEventListener("blur",function(){if($(s.id).value.trim()!=="")chk(s,true)});
   });
-  
-  $("f").addEventListener("submit", function(e){
+  function view(n){["formView","busyView","resView"].forEach(function(v){$(v).hidden=(v!==n)});var c=document.querySelector(".card");c.scrollTop=0}
+
+  function news2(p){
+    var s=[],a=function(v,c,r){for(var i=0;i<c.length;i++)if(v<=c[i])return r[i];return r[r.length-1]};
+    s.push(a(p.respiratory_rate,[8,11,20,24],[3,1,0,2,3]));
+    s.push(a(p.spo2,[91,93,95],[3,2,1,0]));
+    s.push(p.supplemental_oxygen?2:0);
+    s.push(a(p.blood_pressure_systolic,[90,100,110,219],[3,2,1,0,3]));
+    s.push(a(p.heart_rate,[40,50,90,110,130],[3,1,0,1,2,3]));
+    s.push(p.consciousness_alert?0:3);
+    s.push(a(p.temperature,[35,36,38,39],[3,1,0,1,2]));
+    var t=s.reduce(function(x,y){return x+y},0),r3=s.indexOf(3)>-1;
+    return t>=7?"critical":t>=5?"urgent":r3?"watch":"stable";
+  }
+  async function predict(p){
+    var c=new AbortController(),t=setTimeout(function(){c.abort()},45000);
+    try{
+      var r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(p),signal:c.signal});
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      return await r.json();
+    }finally{clearTimeout(t)}
+  }
+
+  $("f").addEventListener("submit",async function(e){
     e.preventDefault();
-    var bad=[];V.concat([AGE]).forEach(function(s){var m=check(s,true);if(m)bad.push(s)});
-    var sum=$("sum");
-    if(bad.length){
-      sum.textContent="Please fix "+bad.length+" field"+(bad.length>1?"s":"")+": "+bad.map(function(s){return s.n}).join(", ")+".";
-      sum.classList.add("on");$(bad[0].id).focus();return;
+    var bad=SPEC.filter(function(s){return chk(s,true)});
+    if(bad.length){$(bad[0].id).focus();return}
+    var p={age:parseInt($("age").value,10) || 0,heart_rate:parseInt($("hr").value,10),blood_pressure_systolic:parseInt($("bp").value,10),respiratory_rate:parseInt($("rr").value,10),spo2:parseFloat($("spo2").value),temperature:parseFloat($("temp").value),supplemental_oxygen:parseInt($("o2").value,10),consciousness_alert:parseInt($("alert").value,10)};
+    view("busyView");$("wake").textContent="";
+    var wt=setTimeout(function(){$("wake").textContent="The prediction server is waking up. This can take up to a minute on the first request."},4000);
+    var level,src;
+    try{
+      var d=await predict(p);
+      level=(d.triage_level==="Critical"||d.prediction===1)?"critical":"stable";
+      src="Classified by the live Random Forest prediction API.";
+    }catch(err){
+      console.error("Prediction API error:",err);
+      level=news2(p);
+      src="Prediction service unreachable, so this is a rule-based NEWS2 estimate.";
     }
-    sum.classList.remove("on");
-    runAPI(); 
+    clearTimeout(wt);
+    show(p,level,src);
   });
-  
-  async function runAPI(){
-    var d={};V.forEach(function(s){d[s.id]=Number($(s.id).value)});
-    var ageVal = Number($("age").value) || 0;
-    var o2Val = Number($("o2").value);
-    var avpuVal = Number($("avpu").value);
-    
-    var avpuTxt=$("avpu").options[$("avpu").selectedIndex].text;
-    var o2Txt=$("o2").options[$("o2").selectedIndex].text;
 
-    var payload = {
-        age: ageVal,
-        heart_rate: d.hr,
-        blood_pressure_systolic: d.sbp,
-        respiratory_rate: d.rr,
-        spo2: d.spo2,
-        temperature: d.temp,
-        supplemental_oxygen: o2Val,
-        consciousness_alert: avpuVal
-    };
-
-    // Activate the pulsing loading screen
-    $("formView").hidden = true;
-    $("processing-screen").classList.add("active");
-
-    try {
-        const response = await fetch('https://triage-api-1qji.onrender.com/predict', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Server returned ${response.status}. Make sure Render server is awake.`);
-        }
-
-        const apiData = await response.json(); 
-
-        var isCritical = (apiData.triage_level === "Critical" || apiData.prediction === 1);
-        var r;
-        
-        if(isCritical) {
-            r={c:"hi", h:"CRITICAL: Immediate Attention Required", p:"Machine learning classification indicates acute clinical escalation."};
-        } else {
-            r={c:"low", h:"STABLE: Monitor Normally", p:"Vital parameters remain within normal threshold bounds."};
-        }
-
-        // Delay showing results to ensure the pulsing animation plays smoothly
-        setTimeout(() => {
-            $("processing-screen").classList.remove("active");
-
-            var b=$("band");b.className="band "+r.c;
-            b.innerHTML='<div class="score" aria-hidden="true"><div><b>'+(isCritical ? '⚠️' : '✓')+'</b><small>AI</small></div></div><div><h2>'+r.h+'</h2><p>'+r.p+'</p></div>';
-            b.setAttribute("aria-label","AI Prediction. "+r.h);
-
-            var rows=[
-                ["Respiratory rate",d.rr+" /min"],
-                ["SpO₂",d.spo2+" %"],
-                ["Breathing support",o2Txt],
-                ["Systolic blood pressure",d.sbp+" mmHg"],
-                ["Heart rate",d.hr+" bpm"],
-                ["Consciousness",avpuTxt],
-                ["Temperature",d.temp+" °C"]
-            ];
-            
-            $("rows").innerHTML=rows.map(function(x){
-                return '<tr><td>'+x[0]+'</td><td>'+x[1]+'</td></tr>'
-            }).join("");
-            
-            $("note").textContent=($("age").value?"Patient age: "+$("age").value+" years. ":"")+"Score securely generated via live Random Forest ML Prediction API.";
-
-            $("resView").hidden=false;
-            $("t2").focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});
-        }, 1500);
-
-    } catch (err) {
-        console.error(err);
-        $("processing-screen").classList.remove("active");
-        $("formView").hidden = false;
-        alert("Connection Failed. The Render server might be asleep (it takes ~40s to wake up on the first click). Please click generate again.\n\n" + err.message);
-    }
+  function show(p,level,src){
+    var L=LV[level];
+    var obs=[["Age",p.age ? p.age+" years" : "Not specified"],["Heart rate",p.heart_rate+" bpm"],["Systolic BP",p.blood_pressure_systolic+" mmHg"],["Respiratory rate",p.respiratory_rate+" /min"],["SpO₂",p.spo2+" %"],["Temperature",p.temperature+" °C"],["Breathing support",p.supplemental_oxygen?"Supplemental oxygen":"Room air"],["Consciousness",p.consciousness_alert?"Alert":"Not alert"]];
+    last={L:L,src:src,obs:obs,time:new Date()};
+    var b=$("banner");b.style.setProperty("--bg",L.bg);b.style.setProperty("--fg",L.fg);
+    $("ricon").textContent=L.i;$("rt").textContent=L.t;$("rd").textContent=L.d;$("rs").textContent=src;
+    $("obs").innerHTML="";
+    obs.forEach(function(o){var d=document.createElement("div"),t=document.createElement("dt"),v=document.createElement("dd");t.textContent=o[0];v.textContent=o[1];d.appendChild(t);d.appendChild(v);$("obs").appendChild(d)});
+    view("resView");$("rtitle").focus({preventScroll:true});
   }
-  
-  function back(){$("resView").hidden=true;$("formView").hidden=false;window.scrollTo({top:0,behavior:"smooth"});$("hr").focus({preventScroll:true})}
-  $("edit").onclick=back;
-  
+
+  /* ---------- PNG report (drawn on a canvas, no external libraries) ---------- */
+  function rr(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath()}
+  function wrap(c,t,x,y,mw,lh){var w=t.split(" "),l="";w.forEach(function(k){var n=l?l+" "+k:k;if(c.measureText(n).width>mw&&l){c.fillText(l,x,y);y+=lh;l=k}else l=n});c.fillText(l,x,y);return y+lh}
+  function report(){
+    var W=1080,H=1350,cv=document.createElement("canvas");cv.width=W;cv.height=H;var c=cv.getContext("2d"),F='"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif';
+    c.fillStyle="#F0EFE2";c.fillRect(0,0,W,H);
+    c.fillStyle="#8B0000";rr(c,40,40,1000,1270,28);c.fill();
+    c.save();rr(c,40,50,1000,1260,28);c.clip();c.fillStyle="#FFFEFA";c.fillRect(40,50,1000,1260);
+    c.fillStyle="#155F49";c.fillRect(40,1240,1000,70);c.restore();
+    /* logo */
+    c.save();c.translate(90,98);c.scale(.55,.55);
+    c.fillStyle="#155F49";c.fill(new Path2D("M50 120C50 120 10 90 10 40V15L50 0L90 15V40C90 90 50 120 50 120Z"));
+    c.strokeStyle="#fff";c.lineWidth=6;c.lineCap="round";c.lineJoin="round";c.stroke(new Path2D("M15 55H28L33 35L38.5 55M61.5 55L67 80L73 55H85"));
+    var cr=new Path2D("M46 44H54V51H61V59H54V66H46V59H39V51H46V44Z");c.fillStyle="#fff";c.fill(cr);c.strokeStyle="#8B0000";c.lineWidth=3;c.stroke(cr);c.restore();
+    c.textBaseline="alphabetic";c.fillStyle="#155F49";c.textAlign="left";
+    c.font="800 36px "+F;c.fillText("Instant Vitals",165,128);c.font="600 20px "+F;c.fillText("C H E C K E R",166,158);
+    c.textAlign="right";c.font="800 26px "+F;c.fillText("TRIAGE REPORT",990,126);
+    c.fillStyle="#5A6B64";c.font="400 22px "+F;c.fillText(last.time.toLocaleString(),990,160);
+    c.fillStyle="#155F49";c.fillRect(90,192,900,3);
+    /* banner */
+    var L=last.L;c.fillStyle=L.bg;rr(c,90,225,900,270,18);c.fill();
+    c.fillStyle=L.fg;c.save();rr(c,90,225,900,270,18);c.clip();c.fillRect(90,225,16,270);c.restore();
+    c.beginPath();c.arc(185,360,50,0,7);c.lineWidth=8;c.strokeStyle=L.fg;c.stroke();
+    c.textAlign="center";c.font="800 56px "+F;c.fillText(L.i,185,381);
+    c.textAlign="left";c.font="800 34px "+F;var y=wrap(c,L.t,265,320,690,42);
+    c.font="500 24px "+F;y=wrap(c,L.d,265,y+4,690,33);
+    c.font="italic 20px "+F;c.globalAlpha=.85;wrap(c,last.src,265,y+6,690,28);c.globalAlpha=1;
+    /* table */
+    c.fillStyle="#5A6B64";c.font="800 22px "+F;c.textAlign="left";c.fillText("RECORDED OBSERVATIONS",90,552);
+    last.obs.forEach(function(o,i){
+      var ry=575+i*58;c.fillStyle="#10231D";c.textAlign="left";c.font="500 24px "+F;c.fillText(o[0],90,ry+38);
+      c.textAlign="right";c.fillStyle="#155F49";c.font="800 26px "+F;c.fillText(o[1],990,ry+38);
+      c.fillStyle="#D9E2DC";c.fillRect(90,ry+57,900,2);
+    });
+    c.textAlign="left";c.fillStyle="#5A6B64";c.font="400 20px "+F;
+    wrap(c,"Decision support only. This report does not replace clinical judgement. In an emergency, call your local emergency number.",90,1100,900,28);
+    c.fillStyle="#F0EFE2";c.textAlign="center";c.font="600 22px "+F;c.fillText("Instant Vitals Checker  •  NEWS2 automated triage",540,1283);
+    return cv;
+  }
+  $("dl").addEventListener("click",function(){
+    if(!last)return;
+    var cv=report(),btn=$("dlt");
+    function save(url,rev){var a=document.createElement("a");a.href=url;a.download="instant-vitals-report.png";document.body.appendChild(a);a.click();a.remove();if(rev)setTimeout(function(){URL.revokeObjectURL(url)},3000);btn.textContent="Saved ✓";setTimeout(function(){btn.textContent="Download report (PNG)"},2200)}
+    if(cv.toBlob)cv.toBlob(function(b){save(URL.createObjectURL(b),true)},"image/png");else save(cv.toDataURL("image/png"),false);
+  });
+
+  $("edit").onclick=function(){view("formView");$("hr").focus({preventScroll:true})};
   function clearAll(){
-    document.querySelectorAll("input").forEach(function(i){i.value="";i.removeAttribute("aria-invalid")});
-    $("o2").selectedIndex=0;$("avpu").selectedIndex=0;$("sum").classList.remove("on");
-    document.querySelectorAll(".f.bad").forEach(function(f){f.classList.remove("bad");var h=f.querySelector(".hint");if(h.dataset.o)h.textContent=h.dataset.o});
-    progress();
+    SPEC.forEach(function(s){var el=$(s.id);el.value="";el.removeAttribute("aria-invalid");var b=el.closest(".f");b.classList.remove("bad");b.querySelector(".err").textContent=""});
+    $("o2").selectedIndex=0;$("alert").selectedIndex=0;
   }
-  
-  $("again").onclick=function(){clearAll();back()};
-  $("clear").onclick=function(){clearAll();$("hr").focus()};
-  $("sample").onclick=function(){clearAll();var s={hr:78,sbp:122,rr:16,spo2:97,temp:36.8,age:55};for(var k in s)$(k).value=s[k];progress()};
-  
-  progress();
+  $("again").onclick=function(){clearAll();view("formView");$("age").focus({preventScroll:true})};
+  $("clear").onclick=function(){clearAll();$("age").focus()};
+  $("sample").onclick=function(){clearAll();var s={age:55,hr:78,bp:122,rr:16,spo2:97,temp:36.8};for(var k in s)$(k).value=s[k]};
 })();
 </script>
 </body>
